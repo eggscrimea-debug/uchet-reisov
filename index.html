@@ -38,10 +38,62 @@
   .ride-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 </style>
+
+<style id="active-completed-layout">
+.ride-section{margin-top:14px}
+.ride-section:first-of-type{margin-top:0}
+.ride-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px}
+.ride-section-head h3{margin:0;font-size:15px;letter-spacing:-.15px}
+.section-count{display:inline-flex;min-width:22px;height:22px;align-items:center;justify-content:center;padding:0 7px;margin-left:5px;border-radius:999px;background:#e8f1fb;color:#175a91;font-size:11px;font-weight:750;vertical-align:1px}
+.section-count.completed{background:#eef1f4;color:#5f6975}
+.completed-section{border-top:1px solid var(--line);padding-top:15px;margin-top:18px}
+.completed-rides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.completed-ride{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto minmax(95px,.85fr);gap:8px;align-items:center;background:#fafbfc;border:1px solid #e7ebef;border-radius:12px;padding:10px 11px;min-width:0}
+.completed-ride>div{min-width:0}
+.completed-ride .label{display:block;font-size:9px;color:var(--muted);margin-bottom:3px}
+.completed-ride .value{display:block;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.completed-ride .profit{justify-self:end;text-align:right}
+.completed-ride .profit .value{color:var(--green)}
+.completed-open{border:0;background:#edf2f6;color:#243345;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:650}
+.completed-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:11px;flex-wrap:wrap}
+.completed-pager button{border:1px solid #d9e0e7;background:#fff;color:#324255;border-radius:9px;min-width:34px;height:32px;padding:0 9px;font-size:12px;font-weight:650}
+.completed-pager button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.completed-pager button:disabled{opacity:.45}
+.completed-pager .pager-info{font-size:11px;color:var(--muted);padding:0 4px}
+.compact-empty{padding:16px 10px}
+@media(max-width:650px){
+  .completed-rides{grid-template-columns:1fr}
+  .completed-ride{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) auto;gap:7px}
+  .completed-ride .profit{grid-column:1/2;justify-self:start;text-align:left}
+  .completed-ride .completed-open{grid-column:3/4;grid-row:1/3}
+}
+</style>
 </head><body><div class="wrap"><div class="top"><div class="brand"><img class="app-logo" src="apple-touch-icon.png?v=2" alt=""><div class="brand-text"><h1>Учет рейсов</h1><p>ИП / ООО • выручка • расходы • налоги • чистая прибыль</p></div></div><div class="switch" id="companySwitch"><button data-company="ip" class="active">ИП</button><button data-company="ooo">ООО</button></div></div>
 <div class="toolbar"><div class="field"><label>Период</label><select id="periodType"><option value="all">За все время</option><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year">Год</option><option value="custom">Произвольный</option></select></div><div class="field" id="periodValueWrap"><label>Выбор</label><input id="periodValue" type="month"></div><div class="period-custom" id="customWrap"><div class="field"><label>С</label><input id="dateFrom" type="date"></div><div class="field"><label>По</label><input id="dateTo" type="date"></div></div><button class="btn secondary" id="addBtn">+ Новый рейс</button><button class="btn secondary" id="exportBtn">Экспорт JSON</button><label class="btn secondary" style="display:inline-flex;align-items:center;justify-content:center">Импорт JSON<input id="importInput" type="file" accept="application/json,.json" hidden></label></div>
 <div class="stats" id="stats"></div>
-<div class="grid"><section class="card flights-card"><div class="flights-head"><div><h2>Рейсы</h2><span class="muted" id="rangeLabel"></span></div></div><div id="ridesBody" class="rides-cards"></div><div id="empty" class="empty" style="display:none">Рейсов за выбранный период нет.</div></section><section class="card"><h2>Сводка по организации</h2><div id="orgSummary"></div></section></div>
+<div class="grid"><section class="card flights-card">
+<div class="flights-head"><div><h2>Рейсы</h2><span class="muted" id="rangeLabel"></span></div></div>
+
+<div class="ride-section">
+  <div class="ride-section-head">
+    <h3>Активные <span class="section-count" id="activeCount">0</span></h3>
+    <span class="muted">Рабочие рейсы</span>
+  </div>
+  <div id="activeRidesBody" class="rides-cards"></div>
+  <div id="activeEmpty" class="empty compact-empty">Активных рейсов нет.</div>
+</div>
+
+<div class="ride-section completed-section">
+  <div class="ride-section-head">
+    <h3>Завершенные <span class="section-count completed" id="completedCount">0</span></h3>
+    <span class="muted">Архив</span>
+  </div>
+  <div id="completedRidesBody" class="completed-rides"></div>
+  <div id="completedEmpty" class="empty compact-empty">Завершенных рейсов нет.</div>
+  <div id="completedPager" class="completed-pager"></div>
+</div>
+</section>
+<section class="card"><h2>Сводка по организации</h2><div id="orgSummary"></div></section></div>
 <div class="footer">Данные хранятся локально в браузере. Экспорт JSON нужен для резервной копии и переноса на другое устройство.</div></div>
 <div class="modalback" id="modalBack"><div class="modal"><div class="modalhead"><h3 id="modalTitle">Новый рейс</h3><button class="close" id="closeModal">×</button></div><div class="notice" style="margin-top:10px">Суммы считаются отдельно для выбранной организации. Для ООО расходы с НДС и без НДС ведутся раздельно.</div><form id="rideForm"><input type="hidden" id="rideId"><div class="formgrid"><div class="field"><label>Дата рейса</label><input required id="rideDate" type="date"></div><div class="field"><label>Номер рейса</label><input required id="rideNo" placeholder="Например, Рейс №15"></div><div class="field"><label>Заказчик</label><input id="client" placeholder="Название клиента"></div><div class="field"><label>Статус</label><select id="status"><option value="work">В работе</option><option value="partial">Предоплата получена</option><option value="done">Рейс выполнен</option><option value="debt">Есть долг</option><option value="paid">Оплачен полностью</option></select></div><div class="field"><label>Полная стоимость рейса, ₽</label><input required id="total" type="number" min="0" step="0.01" inputmode="decimal"></div><div class="field"><label>Полученная предоплата, ₽</label><input id="prepay" type="number" min="0" step="0.01" inputmode="decimal"></div><div class="field full"><label>Комментарий</label><textarea id="comment" placeholder="Любые дополнительные сведения по рейсу"></textarea></div></div><div class="expenses"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 style="margin:0">Расходы</h2><button type="button" class="btn small secondary" id="addExpense">+ Добавить расход</button></div><div class="muted" style="font-size:12px;margin:6px 0 10px">Для ООО укажи расходы с НДС — входной НДС будет рассчитан автоматически по ставке 22/122. Для ИП признак НДС скрыт.</div><div id="expensesBox"></div></div><div id="taxBlock" class="formgrid" style="margin-top:14px"><div class="field"><label>Налоговые платежи, ₽</label><input id="tax" type="number" min="0" step="0.01" inputmode="decimal"></div><div class="field"><label>Чистая прибыль, ₽</label><input id="profitPreview" readonly></div></div><div id="oooCalc" class="card" style="margin-top:14px;display:none;padding:12px;background:#f8fafc;box-shadow:none"><div class="summaryline"><span>НДС с реализации</span><b id="modalVatOut">0 ₽</b></div><div class="summaryline"><span>Входной НДС</span><b id="modalVatIn">0 ₽</b></div><div class="summaryline"><span>НДС к уплате</span><b id="modalVatPay">0 ₽</b></div><div class="summaryline"><span>Прибыль до налога</span><b id="modalProfitBeforeTax">0 ₽</b></div><div class="summaryline"><span>Налог на прибыль 25%</span><b id="modalProfitTax">0 ₽</b></div><div class="summaryline"><span>Чистая прибыль</span><b id="modalNetProfit">0 ₽</b></div></div><div class="actions" style="margin-top:14px"><button type="submit" class="btn">Сохранить рейс</button><button type="button" class="btn danger" id="deleteBtn" style="display:none">Удалить рейс</button></div></form></div></div>
 <script>
@@ -52,7 +104,7 @@ const storage={
   set(k,v){try{localStorage.setItem(k,v)}catch(e){memoryStore[k]=v}},
   remove(k){try{localStorage.removeItem(k)}catch(e){delete memoryStore[k]}}
 };
-let state={rids:[],company:'ip',period:{type:'all',value:'',from:'',to:''}};
+let state={rids:[],company:'ip',period:{type:'all',value:'',from:'',to:''},completedPage:1};
 try{const raw=storage.get(KEY);const parsed=raw?JSON.parse(raw):null;if(parsed&&Array.isArray(parsed.rids))state.rids=parsed.rids}catch(e){}
 try{state.company=storage.get(COMPANY_KEY)||'ip'}catch(e){state.company='ip'}
 state.rids=state.rids.map(r=>({...r,company:r.company||'ip',expenses:Array.isArray(r.expenses)?r.expenses:[]}));
@@ -76,10 +128,53 @@ function collectForm(){const ex=Array.from(document.querySelectorAll('.expense-r
 function stats(){const rs=filtered();const total=rs.reduce((s,r)=>s+r.total,0),pre=rs.reduce((s,r)=>s+r.prepay,0),d=rs.reduce((s,r)=>s+debt(r),0),ex=rs.reduce((s,r)=>s+expenseTotal(r),0),tax=rs.reduce((s,r)=>s+taxTotal(r),0),pr=rs.reduce((s,r)=>s+profit(r),0),vat=rs.reduce((s,r)=>s+vatTotal(r),0),vatOut=rs.reduce((s,r)=>s+(state.company==='ooo'?oooCalc(r).outputVat:0),0),vatPay=rs.reduce((s,r)=>s+(state.company==='ooo'?oooCalc(r).vatPay:0),0),profitTax=rs.reduce((s,r)=>s+(state.company==='ooo'?oooCalc(r).profitTax:0),0);return {count:rs.length,total,pre,d,ex,tax,pr,vat,vatOut,vatPay,profitTax}}
 function renderStats(){const s=stats();$('stats').innerHTML=`<div class="stat"><div class="k">Всего рейсов</div><div class="v">${s.count}</div></div><div class="stat"><div class="k">Полная стоимость</div><div class="v">${money(s.total)}</div></div><div class="stat"><div class="k">Получено предоплат</div><div class="v">${money(s.pre)}</div></div><div class="stat"><div class="k">Долг по остаткам</div><div class="v">${money(s.d)}</div></div><div class="stat"><div class="k">Расходы</div><div class="v">${money(s.ex)}</div></div><div class="stat"><div class="k">Чистая прибыль</div><div class="v">${money(s.pr)}</div></div>`;const p=state.period;$('rangeLabel').textContent=periodLabel(p);$('orgSummary').innerHTML=`<div class="summaryline"><span>Организация</span><b>${companyName()}</b></div><div class="summaryline"><span>Рейсов в периоде</span><b>${s.count}</b></div><div class="summaryline"><span>Выручка</span><b>${money(s.total)}</b></div><div class="summaryline"><span>Получено</span><b>${money(s.pre)}</b></div><div class="summaryline"><span>Остаток</span><b>${money(s.d)}</b></div><div class="summaryline"><span>Расходы</span><b>${money(s.ex)}</b></div>${state.company==='ooo'?`<div class="summaryline"><span>НДС с реализации</span><b>${money(s.vatOut)}</b></div><div class="summaryline"><span>Входной НДС</span><b>${money(s.vat)}</b></div><div class="summaryline"><span>НДС к уплате</span><b>${money(s.vatPay)}</b></div><div class="summaryline"><span>Налог на прибыль 25%</span><b>${money(s.profitTax)}</b></div>`:''}<div class="summaryline"><span>Всего налогов</span><b>${money(s.tax)}</b></div><div class="summaryline"><span>Чистая прибыль</span><b>${money(s.pr)}</b></div>`}
 function periodLabel(p){if(p.type==='all')return 'Все время';if(p.type==='month'&&p.value){const [y,m]=p.value.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(y,m-1,1))}if(p.type==='quarter'&&p.value)return p.value.replace('-',' ');if(p.type==='year'&&p.value)return p.value;if(p.type==='custom')return `${p.from||'…'} — ${p.to||'…'}`;return ''}
-function renderTable(){const rs=filtered();$('ridesBody').innerHTML=rs.map(r=>`<article class="ride-card"><div class="ride-top"><div><div class="ride-title">${esc(r.rideNo)}</div><div class="muted">${esc(r.client||'Без заказчика')}</div></div><span class="status ${esc(r.status)}">${statusText(r.status)}</span></div><div class="ride-date">${new Intl.DateTimeFormat('ru-RU').format(new Date(r.date+'T00:00:00'))}</div><div class="ride-grid"><div><span>Стоимость</span><b>${money(r.total)}</b></div><div><span>Предоплата</span><b>${money(r.prepay)}</b></div><div><span>Долг</span><b>${money(debt(r))}</b></div><div><span>Расходы</span><b>${money(expenseTotal(r))}</b></div><div><span>Налоги</span><b>${money(taxTotal(r))}</b></div><div class="profit"><span>Чистая прибыль</span><b>${money(profit(r))}</b></div></div><button class="btn small secondary ride-open" data-edit="${r.id}">Открыть рейс</button></article>`).join('');$('empty').style.display=rs.length?'none':'block';document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(state.rids.find(r=>r.id===b.dataset.edit)))}
+function renderTable(){
+  const rs=filtered();
+  const isCompleted=r=>r.status==='done'||r.status==='paid';
+  const active=rs.filter(r=>!isCompleted(r));
+  const completed=rs.filter(isCompleted);
+  const perPage=20;
+  const totalPages=Math.max(1,Math.ceil(completed.length/perPage));
+  state.completedPage=Math.min(Math.max(1,state.completedPage||1),totalPages);
+  const startIndex=(state.completedPage-1)*perPage;
+  const pageRows=completed.slice(startIndex,startIndex+perPage);
+
+  const activeBody=$('activeRidesBody');
+  const completedBody=$('completedRidesBody');
+  activeBody.innerHTML=active.map(r=>`<article class="ride-card"><div class="ride-top"><div><div class="ride-title">${esc(r.rideNo)}</div><div class="muted">${esc(r.client||'Без заказчика')}</div></div><span class="status ${esc(r.status)}">${statusText(r.status)}</span></div><div class="ride-date">${new Intl.DateTimeFormat('ru-RU').format(new Date(r.date+'T00:00:00'))}</div><div class="ride-grid"><div><span>Стоимость</span><b>${money(r.total)}</b></div><div><span>Предоплата</span><b>${money(r.prepay)}</b></div><div><span>Долг</span><b>${money(debt(r))}</b></div><div><span>Расходы</span><b>${money(expenseTotal(r))}</b></div><div><span>Налоги</span><b>${money(taxTotal(r))}</b></div><div class="profit"><span>Чистая прибыль</span><b>${money(profit(r))}</b></div></div><button class="btn small secondary ride-open" data-edit="${r.id}">Открыть рейс</button></article>`).join('');
+
+  completedBody.innerHTML=pageRows.map(r=>`<div class="completed-ride"><div><span class="label">Рейс</span><span class="value">${esc(r.rideNo)}</span></div><div><span class="label">Контрагент</span><span class="value">${esc(r.client||'Без заказчика')}</span></div><div><span class="label">Дата</span><span class="value">${new Intl.DateTimeFormat('ru-RU').format(new Date(r.date+'T00:00:00'))}</span></div><div class="profit"><span class="label">Прибыль</span><span class="value">${money(profit(r))}</span></div><button class="completed-open" data-edit="${r.id}">Открыть</button></div>`).join('');
+
+  $('activeCount').textContent=active.length;
+  $('completedCount').textContent=completed.length;
+  $('activeEmpty').style.display=active.length?'none':'block';
+  $('completedEmpty').style.display=completed.length?'none':'block';
+
+  const pager=$('completedPager');
+  if(completed.length>perPage){
+    const parts=[];
+    parts.push(`<button type="button" data-page="${Math.max(1,state.completedPage-1)}" ${state.completedPage===1?'disabled':''}>‹</button>`);
+    for(let p=1;p<=totalPages;p++){
+      if(p===1||p===totalPages||Math.abs(p-state.completedPage)<=1){
+        parts.push(`<button type="button" class="${p===state.completedPage?'active':''}" data-page="${p}">${p}</button>`);
+      }else if(p===2&&state.completedPage>4 || p===totalPages-1&&state.completedPage<totalPages-3){
+        parts.push('<span class="pager-info">…</span>');
+      }
+    }
+    parts.push(`<button type="button" data-page="${Math.min(totalPages,state.completedPage+1)}" ${state.completedPage===totalPages?'disabled':''}>›</button>`);
+    pager.innerHTML=parts.join('');
+    pager.querySelectorAll('button[data-page]').forEach(b=>b.onclick=()=>{state.completedPage=Number(b.dataset.page);renderTable();});
+    pager.insertAdjacentHTML('beforeend',`<span class="pager-info">Стр. ${state.completedPage} из ${totalPages}</span>`);
+  }else{
+    pager.innerHTML='';
+  }
+
+  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openModal(state.rids.find(r=>r.id===b.dataset.edit)));
+}
+
 function statusText(s){return ({work:'В работе',partial:'Предоплата получена',done:'Рейс выполнен',debt:'Есть долг',paid:'Оплачен полностью'})[s]||s}
 function render(){document.querySelectorAll('#companySwitch button').forEach(b=>b.classList.toggle('active',b.dataset.company===state.company));const t=$('periodType').value=state.period.type;$('periodValueWrap').style.display=['month','quarter','year'].includes(t)?'flex':'none';$('customWrap').classList.toggle('show',t==='custom');if(t==='month'){$('periodValue').type='month';$('periodValue').value=state.period.value||new Date().toISOString().slice(0,7)}else if(t==='year'){$('periodValue').type='number';$('periodValue').value=state.period.value||new Date().getFullYear()}else if(t==='quarter'){$('periodValue').type='text';$('periodValue').placeholder='2026-Q3';$('periodValue').value=state.period.value||`${new Date().getFullYear()}-Q${Math.floor(new Date().getMonth()/3)+1}`}$('dateFrom').value=state.period.from||'';$('dateTo').value=state.period.to||'';renderStats();renderTable();save()}
-$('companySwitch').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.company=b.dataset.company;render()};$('periodType').onchange=()=>{state.period.type=$('periodType').value;state.period.value='';state.period.from='';state.period.to='';render()};$('periodValue').oninput=()=>{state.period.value=$('periodValue').value.trim();render()};$('dateFrom').onchange=()=>{state.period.from=$('dateFrom').value;render()};$('dateTo').onchange=()=>{state.period.to=$('dateTo').value;render()};$('addBtn').onclick=()=>openModal();$('closeModal').onclick=closeModal;$('modalBack').onclick=e=>{if(e.target===$('modalBack'))closeModal()};$('addExpense').onclick=()=>addExpenseRow();$('total').oninput=recalcPreview;$('tax').oninput=recalcPreview;
+$('companySwitch').onclick=e=>{const b=e.target.closest('button');if(!b)return;state.company=b.dataset.company;state.completedPage=1;render()};$('periodType').onchange=()=>{state.period.type=$('periodType').value;state.period.value='';state.period.from='';state.period.to='';state.completedPage=1;render()};$('periodValue').oninput=()=>{state.period.value=$('periodValue').value.trim();state.completedPage=1;render()};$('dateFrom').onchange=()=>{state.period.from=$('dateFrom').value;state.completedPage=1;render()};$('dateTo').onchange=()=>{state.period.to=$('dateTo').value;state.completedPage=1;render()};$('addBtn').onclick=()=>openModal();$('closeModal').onclick=closeModal;$('modalBack').onclick=e=>{if(e.target===$('modalBack'))closeModal()};$('addExpense').onclick=()=>addExpenseRow();$('total').oninput=recalcPreview;$('tax').oninput=recalcPreview;
 $('rideForm').onsubmit=e=>{e.preventDefault();const r=collectForm();if(!r.rideDate&&false)return;if(!$('rideNo').value.trim()||!$('rideDate').value){alert('Заполни дату и номер рейса.');return}const i=state.rids.findIndex(x=>x.id===r.id);if(i>=0)state.rids[i]=r;else state.rids.push(r);save();closeModal();render()};$('deleteBtn').onclick=()=>{const id=$('rideId').value;if(!id)return;if(confirm('Удалить этот рейс?')){state.rids=state.rids.filter(r=>r.id!==id);save();closeModal();render()}};
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),rids:state.rids},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='uchet-reisov-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('importInput').onchange=e=>{const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||!Array.isArray(o.rids))throw new Error('bad');state.rids=o.rids.filter(r=>r&&r.id&&r.date).map(r=>({...r,company:r.company||'ip',expenses:Array.isArray(r.expenses)?r.expenses:[]}));save();render();alert('Резервная копия загружена.')}catch(err){alert('Не удалось импортировать файл. Проверь JSON резервной копии.')}};rd.readAsText(f);e.target.value=''};
