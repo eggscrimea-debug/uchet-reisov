@@ -49,14 +49,24 @@
 .section-count{display:inline-flex;min-width:22px;height:22px;align-items:center;justify-content:center;padding:0 7px;margin-left:5px;border-radius:999px;background:#e8f1fb;color:#175a91;font-size:11px;font-weight:750;vertical-align:1px}
 .section-count.completed{background:#eef1f4;color:#5f6975}
 .completed-section{border-top:1px solid var(--line);padding-top:15px;margin-top:18px}
-.completed-rides{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-.completed-ride{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) auto minmax(95px,.85fr);gap:8px;align-items:center;background:#fafbfc;border:1px solid #e7ebef;border-radius:12px;padding:10px 11px;min-width:0}
-.completed-ride>div{min-width:0}
+.completed-rides{display:grid;grid-template-columns:1fr;gap:9px}
+.completed-ride{background:#fafbfc;border:1px solid #e7ebef;border-radius:13px;padding:11px 12px;min-width:0}
+.completed-ride-head{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:9px;align-items:center;margin-bottom:9px}
+.completed-ride-head>div{min-width:0}
 .completed-ride .label{display:block;font-size:9px;color:var(--muted);margin-bottom:3px}
 .completed-ride .value{display:block;font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.completed-ride .profit{justify-self:end;text-align:right}
+.completed-ride .profit{text-align:right}
 .completed-ride .profit .value{color:var(--green)}
-.completed-open{border:0;background:#edf2f6;color:#243345;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:650}
+.completed-open{border:0;background:#edf2f6;color:#243345;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:650;white-space:nowrap}
+.completed-senders{display:flex;flex-direction:column;gap:5px;border-top:1px solid #e7ebef;padding-top:8px}
+.completed-sender{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;background:#fff;border:1px solid #e9edf2;border-radius:10px;padding:8px 9px}
+.completed-sender-name{font-size:12px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.completed-sender-mode{font-size:10px;color:var(--muted);margin-top:2px}
+.completed-sender-debt{text-align:right;white-space:nowrap}
+.completed-sender-debt .label{margin-bottom:2px}
+.completed-sender-debt .value{font-size:12px}
+.completed-sender-debt.has-debt{color:#a36a08}
+.completed-sender-debt.no-debt{color:var(--green)}
 .completed-pager{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:11px;flex-wrap:wrap}
 .completed-pager button{border:1px solid #d9e0e7;background:#fff;color:#324255;border-radius:9px;min-width:34px;height:32px;padding:0 9px;font-size:12px;font-weight:650}
 .completed-pager button.active{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -65,49 +75,13 @@
 .compact-empty{padding:16px 10px}
 @media(max-width:650px){
   .completed-rides{grid-template-columns:1fr}
-  .completed-ride{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) auto;gap:7px}
-  .completed-ride .profit{grid-column:1/2;justify-self:start;text-align:left}
-  .completed-ride .completed-open{grid-column:3/4;grid-row:1/3}
-}
-</style>
-
-<style id="period-costs-style">
-.period-costs-card{margin-top:14px}
-.period-costs-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.period-costs-head h2{margin:0 0 5px;font-size:17px}
-.period-cost-row{display:grid;grid-template-columns:minmax(0,1fr) 180px auto;gap:8px;align-items:center;margin-top:9px}
-.period-cost-row input{width:100%}
-.period-cost-remove{border:0;background:#fff0ef;color:#a93630;border-radius:10px;padding:9px 11px;font-weight:650}
-.period-costs-total{display:flex;justify-content:space-between;gap:12px;margin-top:13px;padding-top:12px;border-top:1px solid var(--line);font-size:14px}
-.period-costs-meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)}
-@media(max-width:600px){
-  .period-costs-head{align-items:stretch;flex-direction:column}
-  .period-costs-head .btn{width:100%}
-  .period-cost-row{grid-template-columns:minmax(0,1fr) 120px auto}
-  .period-cost-row input{font-size:14px}
+  .completed-ride-head{grid-template-columns:minmax(0,1fr) auto}
+  .completed-ride-head .profit{grid-column:1/2;text-align:left}
+  .completed-ride-head .completed-open{grid-column:2/3;grid-row:1/3}
 }
 </style>
 </head><body><div class="wrap"><div class="top"><div class="brand"><img class="app-logo" src="apple-touch-icon.png?v=2" alt=""><div class="brand-text"><h1>Учет рейсов</h1><p>отправители • выручка • расходы • налоги • чистая прибыль</p></div></div></div>
 <div class="toolbar"><div class="field"><label>Период</label><select id="periodType"><option value="all">За все время</option><option value="month">Месяц</option><option value="quarter">Квартал</option><option value="year">Год</option><option value="custom">Произвольный</option></select></div><div class="field" id="periodValueWrap"><label>Выбор</label><input id="periodValue" type="month"></div><div class="period-custom" id="customWrap"><div class="field"><label>С</label><input id="dateFrom" type="date"></div><div class="field"><label>По</label><input id="dateTo" type="date"></div></div><button class="btn secondary" id="addBtn">+ Новый рейс</button><button class="btn secondary" id="exportBtn">Экспорт JSON</button><label class="btn secondary" style="display:inline-flex;align-items:center;justify-content:center">Импорт JSON<input id="importInput" type="file" accept="application/json,.json" hidden></label></div>
-
-<div class="card period-costs-card" id="periodCostsCard">
-  <div class="period-costs-head">
-    <div>
-      <h2>Общие затраты периода</h2>
-      <div class="muted">Затраты, которые стали известны позже и распределяются поровну между всеми рейсами выбранного периода.</div>
-    </div>
-    <button class="btn small secondary" id="addPeriodCost">+ Добавить затрату</button>
-  </div>
-  <div id="periodCostsBox"></div>
-  <div class="period-costs-total">
-    <span>Итого затрат периода</span><b id="periodCostsTotal">0 ₽</b>
-  </div>
-  <div class="period-costs-meta">
-    <span>Рейсов в периоде: <b id="periodCostRideCount">0</b></span>
-    <span>На один рейс: <b id="periodCostPerRide">0 ₽</b></span>
-  </div>
-</div>
-
 <div class="stats" id="stats"></div>
 <div class="grid"><section class="card flights-card">
 <div class="flights-head"><div><h2>Рейсы</h2><span class="muted" id="rangeLabel"></span></div></div>
@@ -142,9 +116,8 @@ const storage={
   set(k,v){try{localStorage.setItem(k,v)}catch(e){memoryStore[k]=v}},
   remove(k){try{localStorage.removeItem(k)}catch(e){delete memoryStore[k]}}
 };
-let state={rids:[],period:{type:'all',value:'',from:'',to:''},completedPage:1,periodCosts:[]};
+let state={rids:[],period:{type:'all',value:'',from:'',to:''},completedPage:1};
 try{const raw=storage.get(KEY);const parsed=raw?JSON.parse(raw):null;if(parsed&&Array.isArray(parsed.rids))state.rids=parsed.rids}catch(e){}
-try{const raw=storage.get(KEY);const parsed=raw?JSON.parse(raw):null;if(parsed&&Array.isArray(parsed.periodCosts))state.periodCosts=parsed.periodCosts}catch(e){}
 const $=id=>document.getElementById(id);const money=n=>new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:0}).format(Number(n)||0);const num=v=>Math.max(0,Number(v)||0);const uid=()=>Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);const isoToday=()=>new Date().toISOString().slice(0,10);
 function normalizeSenders(r){
   if(Array.isArray(r.senders)&&r.senders.length)return r.senders.map(x=>({id:x.id||uid(),name:String(x.name||'').trim(),total:num(x.total),prepay:num(x.prepay),mode:x.mode||((r.company==='ooo')?'ooo':'ip')}));
@@ -159,60 +132,10 @@ function senderNames(r){const names=(r.senders||[]).map(x=>x.name).filter(Boolea
 function modeName(m){return m==='ooo'?'ООО · НДС 22%':m==='cash'?'Наличные':'ИП · УСН 8%'}
 function syncSenderTotals(){const rows=Array.from(document.querySelectorAll('.sender-row'));let total=0,pre=0;rows.forEach(row=>{const t=num(row.querySelector('.sender-total')?.value),p=num(row.querySelector('.sender-prepay')?.value);total+=t;pre+=p;const d=row.querySelector('.sender-debt');if(d){d.querySelector('b').textContent=money(Math.max(0,t-p));d.classList.toggle('positive',t-p>0)}});$('total').value=total;$('prepay').value=pre;recalcPreview()}
 function addSenderRow(e={name:'',total:'',prepay:'',mode:'ip'}){const div=document.createElement('div');div.className='sender-row';div.innerHTML=`<div class="sender-field sender-name"><label>Отправитель</label><input class="sender-name-input" placeholder="Название отправителя" value="${esc(e.name)}"></div><div class="sender-field"><label>Режим</label><select class="sender-mode"><option value="ooo" ${e.mode==='ooo'?'selected':''}>ООО · НДС 22%</option><option value="ip" ${(!e.mode||e.mode==='ip')?'selected':''}>ИП · УСН 8%</option><option value="cash" ${e.mode==='cash'?'selected':''}>Наличные</option></select></div><div class="sender-field"><label>Стоимость, ₽</label><input class="sender-total" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${e.total??''}"></div><div class="sender-field"><label>Получено, ₽</label><input class="sender-prepay" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0" value="${e.prepay??''}"></div><div class="sender-debt"><span>Остаток</span><b>${money(senderDebt(e))}</b></div><button type="button" class="sender-remove">Удалить</button>`;div.querySelectorAll('input,select').forEach(i=>i.addEventListener('input',syncSenderTotals));div.querySelector('.sender-remove').onclick=()=>{if(document.querySelectorAll('.sender-row').length<=1){alert('В рейсе должен остаться хотя бы один отправитель.');return}div.remove();syncSenderTotals()};$('sendersBox').appendChild(div);syncSenderTotals()}
-function save(){storage.set(KEY,JSON.stringify({version:3,rids:state.rids,periodCosts:state.periodCosts||[]}));}
-
-function periodKey(){
-  const p=state.period;
-  if(p.type==='custom') return `${p.from||''}_${p.to||''}`;
-  if(p.type==='month') return p.value||'';
-  if(p.type==='quarter') return p.value||'';
-  if(p.type==='year') return p.value||'';
-  return 'all';
-}
-function periodCostTotal(){
-  const key=periodKey();
-  return (state.periodCosts||[]).filter(c=>c.periodKey===key).reduce((s,c)=>s+num(c.amount),0);
-}
-function periodCostPerRide(){
-  const n=filtered().length;
-  return n?periodCostTotal()/n:0;
-}
-function periodCostForRide(r){
-  const rs=filtered();
-  if(!rs.some(x=>x.id===r.id)||!rs.length)return 0;
-  return periodCostPerRide();
-}
-function addPeriodCostRow(c={name:'',amount:'',periodKey:periodKey()}){
-  const div=document.createElement('div');
-  div.className='period-cost-row';
-  div.innerHTML=`<input class="period-cost-name" placeholder="Например, аренда баржи, топливо" value="${esc(c.name)}"><input class="period-cost-amount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="Сумма ₽" value="${c.amount??''}"><button type="button" class="period-cost-remove">Удалить</button>`;
-  div.querySelector('.period-cost-remove').onclick=()=>{div.remove();savePeriodCostsFromUI()};
-  div.querySelectorAll('input').forEach(i=>i.addEventListener('input',savePeriodCostsFromUI));
-  $('periodCostsBox').appendChild(div);
-}
-function savePeriodCostsFromUI(){
-  const key=periodKey();
-  state.periodCosts=(state.periodCosts||[]).filter(c=>c.periodKey!==key);
-  document.querySelectorAll('.period-cost-row').forEach(row=>{
-    const name=row.querySelector('.period-cost-name').value.trim();
-    const amount=num(row.querySelector('.period-cost-amount').value);
-    if(name||amount)state.periodCosts.push({id:uid(),periodKey:key,name,amount});
-  });
-  save();renderPeriodCosts();renderStats();renderTable();
-}
-function renderPeriodCosts(){
-  const key=periodKey();
-  const rows=(state.periodCosts||[]).filter(c=>c.periodKey===key);
-  $('periodCostsBox').innerHTML='';
-  rows.forEach(c=>addPeriodCostRow(c));
-  const total=rows.reduce((s,c)=>s+num(c.amount),0), n=filtered().length;
-  $('periodCostsTotal').textContent=money(total);
-  $('periodCostRideCount').textContent=n;
-  $('periodCostPerRide').textContent=money(n?total/n:0);
-}
+function save(){storage.set(KEY,JSON.stringify({version:2,rids:state.rids}));}
 function expenseTotal(r){return (r.expenses||[]).reduce((s,e)=>s+num(e.amount),0)}
 function calcMixed(r){
-  const senders=r.senders||[];const revenue=senderTotal(r);const expenses=expenseTotal(r)+periodCostForRide(r);const rows=senders.map(x=>({...x,total:num(x.total),prepay:num(x.prepay)}));
+  const senders=r.senders||[];const revenue=senderTotal(r);const expenses=expenseTotal(r);const rows=senders.map(x=>({...x,total:num(x.total),prepay:num(x.prepay)}));
   let totalTax=0,totalNet=0,totalVatOut=0,totalVatIn=0,totalVatPay=0,totalProfitTax=0,totalBefore=0;
   rows.forEach(x=>{
     const share=revenue>0?x.total/revenue:0;const ex=expenses*share;const inputVat=(r.expenses||[]).filter(e=>e.vat).reduce((s,e)=>s+num(e.amount)*22/122*share,0);
@@ -228,7 +151,7 @@ function calcMixed(r){
   return {rows,totalTax,totalNet,totalBefore,totalVatOut,totalVatIn,totalVatPay,totalProfitTax,expenses,revenue};
 }
 function debt(r){return Math.max(0,senderTotal(r)-senderPrepay(r))}
-function profit(r){return num(r.total)-expenseTotal(r)-num(r.tax)}
+function profit(r){return calcMixed(r).totalNet}
 function taxTotal(r){return calcMixed(r).totalTax}
 function dateInPeriod(d){const x=new Date(d+'T00:00:00');const p=state.period;if(p.type==='all')return true;if(p.type==='month'){if(!p.value)return true;const [y,m]=p.value.split('-').map(Number);return x.getFullYear()===y&&x.getMonth()===m-1}if(p.type==='quarter'){if(!p.value)return true;const [y,q]=p.value.split('-Q').map(Number);return x.getFullYear()===y&&Math.floor(x.getMonth()/3)+1===q}if(p.type==='year'){return !p.value||x.getFullYear()===Number(p.value)}if(p.type==='custom'){return (!p.from||d>=p.from)&&(!p.to||d<=p.to)}return true}
 function filtered(){return state.rids.filter(r=>dateInPeriod(r.date)).sort((a,b)=>b.date.localeCompare(a.date))}
@@ -238,7 +161,7 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 function openModal(r=null){$('modalBack').classList.add('show');$('modalTitle').textContent=r?'Редактирование рейса':'Новый рейс';$('rideId').value=r?.id||'';$('rideDate').value=r?.date||isoToday();$('rideNo').value=r?.rideNo||'';$('status').value=r?.status||'work';$('comment').value=r?.comment||'';$('sendersBox').innerHTML='';(r?.senders?.length?normalizeSenders(r):normalizeSenders(r||{})).forEach(e=>addSenderRow(e));$('expensesBox').innerHTML='';(r?.expenses?.length?r.expenses:[{}]).forEach(e=>addExpenseRow(e));$('deleteBtn').style.display=r?'block':'none';syncSenderTotals();recalcPreview()}
 function closeModal(){$('modalBack').classList.remove('show')}
 function collectForm(){const senders=Array.from(document.querySelectorAll('.sender-row')).map(row=>({id:uid(),name:row.querySelector('.sender-name-input').value.trim(),mode:row.querySelector('.sender-mode').value,total:num(row.querySelector('.sender-total').value),prepay:num(row.querySelector('.sender-prepay').value)})).filter(x=>x.name||x.total||x.prepay);if(!senders.length)senders.push({id:uid(),name:'',mode:'ip',total:0,prepay:0});const ex=Array.from(document.querySelectorAll('.expense-row')).map(row=>({name:row.querySelector('.name').value.trim(),amount:num(row.querySelector('.amount').value),vat:!!row.querySelector('.vatFlag')?.checked,vatAmount:row.querySelector('.vatFlag')?.checked?num(row.querySelector('.amount').value)*22/122:0})).filter(e=>e.name||e.amount);const total=senders.reduce((s,x)=>s+x.total,0),prepay=senders.reduce((s,x)=>s+x.prepay,0);return {id:$('rideId').value||uid(),date:$('rideDate').value,rideNo:$('rideNo').value.trim(),status:$('status').value,total,prepay,client:senders.length===1?senders[0].name:'',comment:$('comment').value.trim(),expenses:ex,senders,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()}}
-function stats(){const rs=filtered();const total=rs.reduce((s,r)=>s+senderTotal(r),0),pre=rs.reduce((s,r)=>s+senderPrepay(r),0),periodEx=periodCostTotal(),d=rs.reduce((s,r)=>s+debt(r),0),ex=rs.reduce((s,r)=>s+expenseTotal(r),0),tax=rs.reduce((s,r)=>s+taxTotal(r),0),pr=rs.reduce((s,r)=>s+profit(r),0);return {count:rs.length,total,pre,d,ex,tax,pr}}
+function stats(){const rs=filtered();const total=rs.reduce((s,r)=>s+senderTotal(r),0),pre=rs.reduce((s,r)=>s+senderPrepay(r),0),d=rs.reduce((s,r)=>s+debt(r),0),ex=rs.reduce((s,r)=>s+expenseTotal(r),0),tax=rs.reduce((s,r)=>s+taxTotal(r),0),pr=rs.reduce((s,r)=>s+profit(r),0);return {count:rs.length,total,pre,d,ex,tax,pr}}
 function renderStats(){const s=stats();$('stats').innerHTML=`<div class="stat"><div class="k">Всего рейсов</div><div class="v">${s.count}</div></div><div class="stat"><div class="k">Полная стоимость</div><div class="v">${money(s.total)}</div></div><div class="stat"><div class="k">Получено</div><div class="v">${money(s.pre)}</div></div><div class="stat"><div class="k">Долг по остаткам</div><div class="v">${money(s.d)}</div></div><div class="stat"><div class="k">Расходы</div><div class="v">${money(s.ex)}</div></div><div class="stat"><div class="k">Чистая прибыль</div><div class="v">${money(s.pr)}</div></div>`;const p=state.period;$('rangeLabel').textContent=periodLabel(p);$('orgSummary').innerHTML=`<div class="summaryline"><span>Рейсов в периоде</span><b>${s.count}</b></div><div class="summaryline"><span>Выручка</span><b>${money(s.total)}</b></div><div class="summaryline"><span>Получено</span><b>${money(s.pre)}</b></div><div class="summaryline"><span>Остаток</span><b>${money(s.d)}</b></div><div class="summaryline"><span>Расходы</span><b>${money(s.ex)}</b></div><div class="summaryline"><span>Всего налогов</span><b>${money(s.tax)}</b></div><div class="summaryline"><span>Чистая прибыль</span><b>${money(s.pr)}</b></div>`}
 function periodLabel(p){if(p.type==='all')return 'Все время';if(p.type==='month'&&p.value){const [y,m]=p.value.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(new Date(y,m-1,1))}if(p.type==='quarter'&&p.value)return p.value.replace('-',' ');if(p.type==='year'&&p.value)return p.value;if(p.type==='custom')return `${p.from||'…'} — ${p.to||'…'}`;return ''}
 function renderTable(){
@@ -254,9 +177,13 @@ function renderTable(){
 
   const activeBody=$('activeRidesBody');
   const completedBody=$('completedRidesBody');
-  activeBody.innerHTML=active.map(r=>`<article class="ride-card"><div class="ride-top"><div><div class="ride-title">${esc(r.rideNo)}</div><div class="muted">${(r.senders||[]).length} ${((r.senders||[]).length===1)?'отправитель':'отправителя'}</div><div class="sender-names">${esc(senderNames(r))}</div><div class="sender-count">${(r.senders||[]).map(x=>modeName(x.mode)).join(" · ")}</div></div><span class="status ${esc(r.status)}">${statusText(r.status)}</span></div><div class="ride-date">${new Intl.DateTimeFormat('ru-RU').format(new Date(r.date+'T00:00:00'))}</div><div class="ride-grid"><div><span>Стоимость</span><b>${money(senderTotal(r))}</b></div><div><span>Получено</span><b>${money(senderPrepay(r))}</b></div><div><span>Долг</span><b>${money(Math.max(0,senderTotal(r)-senderPrepay(r)))}</b></div><div><span>Расходы</span><b>${money(expenseTotal(r)+periodCostForRide(r))}</b></div><div><span>Налоги</span><b>${money(taxTotal(r))}</b></div><div class="profit"><span>Чистая прибыль</span><b>${money(profit(r)-periodCostForRide(r))}</b></div></div><button class="btn small secondary ride-open" data-edit="${r.id}">Открыть рейс</button></article>`).join('');
+  activeBody.innerHTML=active.map(r=>`<article class="ride-card"><div class="ride-top"><div><div class="ride-title">${esc(r.rideNo)}</div><div class="muted">${(r.senders||[]).length} ${((r.senders||[]).length===1)?'отправитель':'отправителя'}</div><div class="sender-names">${esc(senderNames(r))}</div><div class="sender-count">${(r.senders||[]).map(x=>modeName(x.mode)).join(" · ")}</div></div><span class="status ${esc(r.status)}">${statusText(r.status)}</span></div><div class="ride-date">${new Intl.DateTimeFormat('ru-RU').format(new Date(r.date+'T00:00:00'))}</div><div class="ride-grid"><div><span>Стоимость</span><b>${money(senderTotal(r))}</b></div><div><span>Получено</span><b>${money(senderPrepay(r))}</b></div><div><span>Долг</span><b>${money(Math.max(0,senderTotal(r)-senderPrepay(r)))}</b></div><div><span>Расходы</span><b>${money(expenseTotal(r))}</b></div><div><span>Налоги</span><b>${money(taxTotal(r))}</b></div><div class="profit"><span>Чистая прибыль</span><b>${money(profit(r))}</b></div></div><button class="btn small secondary ride-open" data-edit="${r.id}">Открыть рейс</button></article>`).join('');
 
-  completedBody.innerHTML=pageRows.map(r=>`<div class="completed-ride"><div><span class="label">Рейс</span><span class="value">${esc(r.rideNo)}</span></div><div><span class="label">Отправители</span><span class="value">${esc(senderNames(r))}</span></div><div><span class="label">Дата</span><span class="value">${new Intl.DateTimeFormat('ru-RU').format(new Date(r.date+'T00:00:00'))}</span></div><div class="profit"><span class="label">Прибыль</span><span class="value">${money(profit(r)-periodCostForRide(r))}</span></div><button class="completed-open" data-edit="${r.id}">Открыть</button></div>`).join('');
+  completedBody.innerHTML=pageRows.map(r=>{
+    const senders=r.senders||[];
+    const senderRows=senders.map(x=>{const d=senderDebt(x);return `<div class="completed-sender"><div><div class="completed-sender-name">${esc(x.name||'Отправитель не указан')}</div><div class="completed-sender-mode">${modeName(x.mode)}</div></div><div class="completed-sender-debt ${d>0?'has-debt':'no-debt'}"><span class="label">Задолженность</span><span class="value">${money(d)}</span></div></div>`}).join('');
+    return `<div class="completed-ride"><div class="completed-ride-head"><div><span class="label">Рейс</span><span class="value">${esc(r.rideNo)}</span></div><div><span class="label">Дата</span><span class="value">${new Intl.DateTimeFormat('ru-RU').format(new Date(r.date+'T00:00:00'))}</span></div><div class="profit"><span class="label">Прибыль</span><span class="value">${money(profit(r))}</span></div><button class="completed-open" data-edit="${r.id}">Открыть</button></div><div class="completed-senders">${senderRows}</div></div>`;
+  }).join('');
 
   $('activeCount').textContent=active.length;
   $('completedCount').textContent=completed.length;
@@ -286,12 +213,10 @@ function renderTable(){
 }
 
 function statusText(s){return ({work:'В работе',partial:'Предоплата получена',done:'Рейс выполнен',debt:'Есть долг',paid:'Оплачен полностью'})[s]||s}
-function render(){renderPeriodCosts();const t=$('periodType').value=state.period.type;$('periodValueWrap').style.display=['month','quarter','year'].includes(t)?'flex':'none';$('customWrap').classList.toggle('show',t==='custom');if(t==='month'){$('periodValue').type='month';$('periodValue').value=state.period.value||new Date().toISOString().slice(0,7)}else if(t==='year'){$('periodValue').type='number';$('periodValue').value=state.period.value||new Date().getFullYear()}else if(t==='quarter'){$('periodValue').type='text';$('periodValue').placeholder='2026-Q3';$('periodValue').value=state.period.value||`${new Date().getFullYear()}-Q${Math.floor(new Date().getMonth()/3)+1}`}$('dateFrom').value=state.period.from||'';$('dateTo').value=state.period.to||'';renderStats();renderTable();save()}
+function render(){const t=$('periodType').value=state.period.type;$('periodValueWrap').style.display=['month','quarter','year'].includes(t)?'flex':'none';$('customWrap').classList.toggle('show',t==='custom');if(t==='month'){$('periodValue').type='month';$('periodValue').value=state.period.value||new Date().toISOString().slice(0,7)}else if(t==='year'){$('periodValue').type='number';$('periodValue').value=state.period.value||new Date().getFullYear()}else if(t==='quarter'){$('periodValue').type='text';$('periodValue').placeholder='2026-Q3';$('periodValue').value=state.period.value||`${new Date().getFullYear()}-Q${Math.floor(new Date().getMonth()/3)+1}`}$('dateFrom').value=state.period.from||'';$('dateTo').value=state.period.to||'';renderStats();renderTable();save()}
 $('periodType').onchange=()=>{state.period.type=$('periodType').value;state.period.value='';state.period.from='';state.period.to='';state.completedPage=1;render()};$('periodValue').oninput=()=>{state.period.value=$('periodValue').value.trim();state.completedPage=1;render()};$('dateFrom').onchange=()=>{state.period.from=$('dateFrom').value;state.completedPage=1;render()};$('dateTo').onchange=()=>{state.period.to=$('dateTo').value;state.completedPage=1;render()};$('addBtn').onclick=()=>openModal();$('addSender').onclick=()=>addSenderRow();$('closeModal').onclick=closeModal;$('modalBack').onclick=e=>{if(e.target===$('modalBack'))closeModal()};$('addExpense').onclick=()=>addExpenseRow();$('total').oninput=recalcPreview;
 $('rideForm').onsubmit=e=>{e.preventDefault();const r=collectForm();if(!r.rideDate&&false)return;if(!$('rideNo').value.trim()||!$('rideDate').value){alert('Заполни дату и номер рейса.');return}const i=state.rids.findIndex(x=>x.id===r.id);if(i>=0)state.rids[i]=r;else state.rids.push(r);save();closeModal();render()};$('deleteBtn').onclick=()=>{const id=$('rideId').value;if(!id)return;if(confirm('Удалить этот рейс?')){state.rids=state.rids.filter(r=>r.id!==id);save();closeModal();render()}};
 $('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),rids:state.rids},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='uchet-reisov-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
 $('importInput').onchange=e=>{const f=e.target.files?.[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o||!Array.isArray(o.rids))throw new Error('bad');state.rids=o.rids.filter(r=>r&&r.id&&r.date).map(r=>({...r,expenses:Array.isArray(r.expenses)?r.expenses:[],senders:normalizeSenders(r)}));save();render();alert('Резервная копия загружена.')}catch(err){alert('Не удалось импортировать файл. Проверь JSON резервной копии.')}};rd.readAsText(f);e.target.value=''};
 render();
 </script></body></html>
-
-<script>document.addEventListener('DOMContentLoaded',()=>{document.getElementById('addPeriodCost')?.addEventListener('click',()=>addPeriodCostRow());renderPeriodCosts?.()});</script>
