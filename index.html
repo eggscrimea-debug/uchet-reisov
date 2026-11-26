@@ -143,9 +143,10 @@ function mergeCloud(cloud){
  for(const source of cloud.rids||[]){
   if(!source||!source.id)continue;
   const r=normalizeRide(source),local=localById.get(r.id);
-  const localTime=Date.parse(local?.updatedAt||local?.createdAt||'')||0;
-  const cloudTime=Date.parse(r.updatedAt||r.createdAt||'')||0;
-  if(!local||cloudTime>localTime)localById.set(r.id,r);
+  // Облако — источник истины после завершения общей сессии редактирования.
+  // Не сравниваем createdAt: он не меняется при правке существующего рейса,
+  // поэтому старое локальное содержимое могло блокировать получение новой версии.
+  localById.set(r.id,r);
  }
  state.rids=Array.from(localById.values()).map(normalizeRide);
  const tariffs=new Map((state.senderTariffs||[]).map(t=>[t.id?'id:'+t.id:'legacy:'+t.bookKey+'|'+normalizeTariffName(t.name),t]));
