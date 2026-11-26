@@ -262,7 +262,7 @@ async function restoreSyncSession(){
   showSyncUser();await loadCloud();await getEditLock();
   if(syncPoll)clearInterval(syncPoll);syncPoll=setInterval(refreshCloud,10000);updateEditControls();
  }catch(e){
-  console.error(e);storage.remove(TOKEN_KEY);storage.remove(REFRESH_KEY);storage.remove(USER_KEY);storage.remove(WORKSPACE_KEY_STORAGE);syncUser=null;
+  console.error(e);storage.remove(TOKEN_KEY);storage.remove(REFRESH_KEY);storage.remove(USER_KEY);syncUser=null;
   try{await createAnonymousWorkspaceSession()}
   catch(err){console.error(err);showSyncLogin();setSyncStatus('Ошибка подключения','err');const status=$('syncLoginStatus');if(status)status.textContent='Ошибка подключения: '+err.message;updateEditControls()}
  }
