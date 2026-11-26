@@ -130,6 +130,22 @@ async function save(){
  if(syncUser){if(!editSession)return false;try{return await writeCloudState()}catch(e){console.error(e);setSyncStatus('Не удалось сохранить черновик','err');alert('Изменения остались на этом устройстве, но не сохранены в облаке: '+e.message);return false}}
  return true;
 }
+function mergeCloud(cloud){
+ if(!cloud||typeof cloud!=='object')return;
+ const localById=new Map((state.rids||[]).map(r=>[r.id,r]));
+ for(const source of cloud.rids||[]){
+  if(!source||!source.id)continue;
+  const r=normalizeRide(source),local=localById.get(r.id);
+  if(!local||!local.updatedAt||!r.updatedAt||new Date(r.updatedAt).getTime()>=new Date(local.updatedAt).getTime())localById.set(r.id,r);
+ }
+ state.rids=Array.from(localById.values()).map(normalizeRide);
+ const tariffs=new Map((state.senderTariffs||[]).map(t=>[t.id?'id:'+t.id:'legacy:'+t.bookKey+'|'+normalizeTariffName(t.name),t]));
+ for(const t of cloud.senderTariffs||[]){
+  if(t&&t.name&&t.bookKey){const key=t.id?'id:'+t.id:'legacy:'+t.bookKey+'|'+normalizeTariffName(t.name);tariffs.set(key,t)}
+ }
+ state.senderTariffs=Array.from(tariffs.values());
+ storage.set(KEY,JSON.stringify(localSnapshot()));render();
+}
 async function loadCloud(){
  if(!syncUser)return;setSyncStatus('Загрузка журнала…');
  const cloud=await readCloudState();
