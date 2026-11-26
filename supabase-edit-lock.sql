@@ -17,14 +17,9 @@ create policy "edit_lock_select_own" on public.edit_lock
   for select to authenticated using (auth.uid() = user_id);
 
 drop policy if exists "edit_lock_insert_own" on public.edit_lock;
-create policy "edit_lock_insert_own" on public.edit_lock
-  for insert to authenticated with check (auth.uid() = user_id);
-
 drop policy if exists "edit_lock_update_own" on public.edit_lock;
-create policy "edit_lock_update_own" on public.edit_lock
-  for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-grant select, insert, update, delete on public.edit_lock to authenticated;
+revoke all on public.edit_lock from authenticated;
+grant select on public.edit_lock to authenticated;
 
 create or replace function public.acquire_edit_lock(
   p_session_id text,
