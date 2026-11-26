@@ -134,8 +134,7 @@ async function loadCloud(){
  if(!syncUser)return;setSyncStatus('Загрузка журнала…');
  const cloud=await readCloudState();
  if(cloud&&(cloud.rids||[]).length+(cloud.senderTariffs||[]).length>0){
-  state.rids=(cloud.rids||[]).map(normalizeRide);state.senderTariffs=cloud.senderTariffs||[];
-  storage.set(KEY,JSON.stringify(localSnapshot()));render();setSyncStatus('Журнал загружен','ok');
+  mergeCloud(cloud);setSyncStatus('Журнал загружен','ok');
  }else if(state.rids.length||state.senderTariffs.length)setSyncStatus('В облаке пока нет данных. Для переноса нажми «Начать редактирование».');
  else setSyncStatus('Облако готово','ok');
 }
@@ -155,10 +154,9 @@ async function startEditSession(){
   editSession=sid;editLock={session_id:sid,owner_label:deviceLabel(),expires_at:row.expires_at};
   const cloud=await readCloudState();
   if(cloud&&(cloud.rids||[]).length+(cloud.senderTariffs||[]).length>0){
-   state.rids=(cloud.rids||[]).map(normalizeRide);state.senderTariffs=cloud.senderTariffs||[];
-   storage.set(KEY,JSON.stringify(localSnapshot()));render();
+   mergeCloud(cloud);
   }else if(state.rids.length||state.senderTariffs.length){
-   if(!confirm('В облаке пока нет журнала. Перенести данные с этого устройства?')){await finishEditSession(false);return}
+   if(!confirm('В облаке пока нет журнала. Перенести данные с этого устройства?')){await callRpc('release_edit_lock',{p_session_id:sid});editSession=null;editLock=null;updateEditControls();return}
    await writeCloudState();
   }
   updateEditControls();resetEditInactivity();setSyncStatus('Редактирование разрешено','ok');
@@ -199,7 +197,7 @@ async function refreshCloud(){
   await getEditLock();
   if(editSession){await renewEditSession();return}
   const cloud=await readCloudState();
-  if(cloud){state.rids=(cloud.rids||[]).map(normalizeRide);state.senderTariffs=cloud.senderTariffs||[];storage.set(KEY,JSON.stringify(localSnapshot()));render()}
+  if(cloud)mergeCloud(cloud)
   setSyncStatus('Синхронизировано','ok');
  }catch(e){console.error(e);setSyncStatus('Нет связи с облаком','err')}
 }
