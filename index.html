@@ -136,12 +136,19 @@ function mergeCloud(cloud){
  for(const source of cloud.rids||[]){
   if(!source||!source.id)continue;
   const r=normalizeRide(source),local=localById.get(r.id);
-  if(!local||!local.updatedAt||!r.updatedAt||new Date(r.updatedAt).getTime()>=new Date(local.updatedAt).getTime())localById.set(r.id,r);
+  const localTime=Date.parse(local?.updatedAt||local?.createdAt||'')||0;
+  const cloudTime=Date.parse(r.updatedAt||r.createdAt||'')||0;
+  if(!local||cloudTime>localTime)localById.set(r.id,r);
  }
  state.rids=Array.from(localById.values()).map(normalizeRide);
  const tariffs=new Map((state.senderTariffs||[]).map(t=>[t.id?'id:'+t.id:'legacy:'+t.bookKey+'|'+normalizeTariffName(t.name),t]));
  for(const t of cloud.senderTariffs||[]){
-  if(t&&t.name&&t.bookKey){const key=t.id?'id:'+t.id:'legacy:'+t.bookKey+'|'+normalizeTariffName(t.name);tariffs.set(key,t)}
+  if(t&&t.name&&t.bookKey){
+   const key=t.id?'id:'+t.id:'legacy:'+t.bookKey+'|'+normalizeTariffName(t.name);
+   const local=tariffs.get(key);
+   const localTime=Date.parse(local?.updatedAt||'')||0,cloudTime=Date.parse(t.updatedAt||'')||0;
+   if(!local||cloudTime>localTime)tariffs.set(key,t);
+  }
  }
  state.senderTariffs=Array.from(tariffs.values());
  storage.set(KEY,JSON.stringify(localSnapshot()));render();
@@ -170,7 +177,7 @@ async function startEditSession(){
   editSession=sid;editLock={session_id:sid,owner_label:deviceLabel(),expires_at:row.expires_at};
   const cloud=await readCloudState();
   if(cloud&&(cloud.rids||[]).length+(cloud.senderTariffs||[]).length>0){
-   mergeCloud(cloud);
+   mergeCloud(cloud);await writeCloudState();
   }else if(state.rids.length||state.senderTariffs.length){
    if(!confirm('В облаке пока нет журнала. Перенести данные с этого устройства?')){await callRpc('release_edit_lock',{p_session_id:sid});editSession=null;editLock=null;updateEditControls();return}
    await writeCloudState();
