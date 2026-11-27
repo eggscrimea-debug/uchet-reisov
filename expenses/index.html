@@ -20,9 +20,10 @@
 <div class="table-wrap"><table><thead><tr><th>Дата</th><th>Категория</th><th>Наименование</th><th style="text-align:right">Сумма</th><th></th></tr></thead><tbody id="expenseRows"></tbody></table></div>
 </section>
 <section id="categories" class="hidden"><div class="card"><div class="section-title" style="margin-top:0"><h2>Управление категориями</h2><button class="btn" id="newCategory">+ Новая категория</button></div><div id="categoryList"></div><p class="note">Переименование меняет название категории и в старых записях. Отключённая категория не предлагается при добавлении расходов, но все прежние записи и суммы сохраняются. Полное удаление не используется, чтобы не потерять историю.</p></div></section>
-<section id="backup" class="hidden"><div class="card"><h2 style="margin-top:0">Резервная копия и экспорт</h2><p class="muted">Сохраняй резервную копию после важных изменений. JSON-файл содержит категории и все расходы.</p><div class="toolbar"><button class="btn" id="exportJson">Скачать резервную копию</button><button class="btn secondary" id="importJson">Загрузить копию</button><input type="file" id="jsonFile" accept=".json,application/json" class="hidden"></div><div class="toolbar"><button class="btn secondary" id="exportCsv">Экспорт в CSV для Excel</button></div><div class="note" id="dataInfo"></div><div class="note" style="background:#fff8e8;padding:12px;border-radius:10px;color:#805b18">Важно: сейчас данные хранятся в памяти этого браузера на этом устройстве. Сайт доступен с любого устройства, но автоматическая синхронизация между телефоном и компьютером ещё не подключена. Для переноса используй резервную копию.</div></div></section>
+<section id="backup" class="hidden"><div class="card"><h2 style="margin-top:0">Резервная копия и экспорт</h2><p class="muted">Сохраняй резервную копию после важных изменений. JSON-файл содержит категории и все расходы.</p><div class="toolbar"><button class="btn" id="exportJson">Скачать резервную копию</button><button class="btn secondary" id="importJson">Загрузить копию</button><input type="file" id="jsonFile" accept=".json,application/json" class="hidden"></div><div class="toolbar"><button class="btn secondary" id="exportCsv">Экспорт в Excel (.xlsx)</button></div><div class="note" id="dataInfo"></div><div class="note" style="background:#fff8e8;padding:12px;border-radius:10px;color:#805b18">Важно: сейчас данные хранятся в памяти этого браузера на этом устройстве. Сайт доступен с любого устройства, но автоматическая синхронизация между телефоном и компьютером ещё не подключена. Для переноса используй резервную копию.</div></div></section>
 <div class="foot">Учёт расходов · данные сохраняются автоматически в этом браузере</div></div>
 <div id="modalRoot"></div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 const KEY='expense-manager-v1';
 const defaultNames=['Расходы Боря','ЗП грузчики','Хоз расходы','Стас','Саша Ионов','ЗП офис','Подготовка документов баржа Иванович','Аренда техники','КШС','Сербин','Воровство/порча'];
@@ -56,7 +57,35 @@ $('quickAdd').onclick=()=>switchTab('expenses');$('homePeriod').onchange=()=>{do
 function download(name,content,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 $('exportJson').onclick=()=>download('rashody-backup-'+today()+'.json',JSON.stringify({version:1,exportedAt:new Date().toISOString(),...state},null,2),'application/json');
 $('importJson').onclick=()=>$('jsonFile').click();$('jsonFile').onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!Array.isArray(d.categories)||!Array.isArray(d.expenses))throw Error();if(confirm('Заменить текущие данные данными из резервной копии?')){state={categories:d.categories,expenses:d.expenses};save();alert('Резервная копия загружена')}}catch(err){alert('Файл не распознан как резервная копия этого приложения')}e.target.value=''};
-$('exportCsv').onclick=()=>{let rows=[['Дата','Категория','Наименование','Сумма'],...state.expenses.map(x=>[x.date,catName(x.categoryId),x.description,x.amount])];let csv='\uFEFF'+rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');download('rashody-'+today()+'.csv',csv,'text/csv;charset=utf-8')};
+$('exportCsv').onclick=()=>{
+ if(!window.XLSX){alert('Не удалось загрузить модуль Excel. Проверь подключение к интернету и повтори экспорт.');return}
+ const wb=XLSX.utils.book_new();
+ const cats=[...state.categories];
+ const groups=cats.map(cat=>({cat,items:state.expenses.filter(x=>x.categoryId===cat.id).sort((a,b)=>(a.date||'').localeCompare(b.date||'')),sum:state.expenses.filter(x=>x.categoryId===cat.id).reduce((s,x)=>s+Number(x.amount||0),0)}));
+ const maxItems=Math.max(0,...groups.map(g=>g.items.length));
+ const width=groups.length*4;
+ const matrix=Array.from({length:Math.max(3,maxItems+3)},()=>Array(width).fill(''));
+ groups.forEach((g,i)=>{
+   const col=i*4;
+   matrix[0][col]=g.cat.name;
+   matrix[1][col]='Наименование';matrix[1][col+1]='Дата';matrix[1][col+2]='Сумма';
+   g.items.forEach((x,j)=>{matrix[2+j][col]=x.description||'';matrix[2+j][col+1]=x.date||'';matrix[2+j][col+2]=Number(x.amount)||0});
+   const totalRow=2+g.items.length;
+   matrix[totalRow][col]='ИТОГО';matrix[totalRow][col+2]=g.sum;
+ });
+ const ws=XLSX.utils.aoa_to_sheet(matrix);
+ const widths=[];groups.forEach(()=>widths.push({wch:30},{wch:13},{wch:16},{wch:3}));
+ ws['!cols']=widths;
+ groups.forEach((g,i)=>{const col=i*4;for(let r=2;r<2+g.items.length;r++){const cell=ws[XLSX.utils.encode_cell({r,c:col+1})];if(cell)cell.z='dd.mm.yyyy';const amount=ws[XLSX.utils.encode_cell({r,c:col+2})];if(amount)amount.z='#,##0.00';}const t=ws[XLSX.utils.encode_cell({r:2+g.items.length,c:col+2})];if(t)t.z='#,##0.00';});
+ XLSX.utils.book_append_sheet(wb,ws,'Расходы по видам');
+ const summary=[['Показатель',...cats.map(c=>c.name)],['Итого по виду расходов',...groups.map(g=>g.sum)],[],['ОБЩИЙ ИТОГ',state.expenses.reduce((s,x)=>s+Number(x.amount||0),0)]];
+ const ws2=XLSX.utils.aoa_to_sheet(summary);
+ ws2['!cols']=[{wch:32},...cats.map(()=>({wch:22}))];
+ cats.forEach((_,i)=>{const cell=ws2[XLSX.utils.encode_cell({r:1,c:i+1})];if(cell)cell.z='#,##0.00'});
+ const grand=ws2['B4'];if(grand)grand.z='#,##0.00';
+ XLSX.utils.book_append_sheet(wb,ws2,'Итог по столбцам');
+ XLSX.writeFile(wb,'rashody-'+today()+'.xlsx');
+};
 function renderAll(){fillSelects();renderHome();renderExpenses();renderCategories();renderBackup()}
 load().then(()=>{renderAll();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})});
 </script></body></html>
