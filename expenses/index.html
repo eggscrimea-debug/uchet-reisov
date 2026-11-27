@@ -94,5 +94,5 @@ $('exportCsv').onclick=()=>{
  XLSX.writeFile(wb,'rashody-'+today()+'.xlsx');
 };
 function renderAll(){fillSelects();renderHome();renderExpenses();renderAccountabilities();renderCategories();renderBackup()}
-load().then(()=>{renderAll();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})});
+load().then(()=>{renderAll();if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').then(reg=>reg.update()).catch(()=>{})});
 </script></body></html>
